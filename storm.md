@@ -10,11 +10,27 @@
 
 ## Jstorm
 storm java 实现
+
+JStorm 比Storm更稳定，更强大，更快， Storm上跑的程序，一行代码不变可以运行在JStorm上。
+
 [Jstorm github](https://github.com/alibaba/jstorm)
 
 [封仲淹：Storm 2.0将会基于JStorm，阿里巴巴全程参与](http://www.infoq.com/cn/news/2015/11/jstorm-apache-alibaba)
 
 [中文资料](https://github.com/alibaba/jstorm/wiki/JStorm-Chinese-Documentation)
+
+- 结论
+1. JStorm 0.9.0 在使用Netty的情况下，比Storm 0.9.0 使用Netty情况下，快10%， 并且JStorm 1. Netty是稳定的而Storm的Netty是不稳定的
+1. 在使用ZeroMQ的情况下， JStorm 0.9.0 比Storm 0.9.0 快30%
+
+- 原因
+
+1. Zeromq减少一次内存拷贝
+1. 增加反序列化线程
+1. 重写采样代码，大幅减少采样影响
+1. 优化ack代码
+1. 优化缓冲map性能
+1. Java比Clojure更底层
 
 ## Heron Twitter新的流处理利器(开源了)
 
