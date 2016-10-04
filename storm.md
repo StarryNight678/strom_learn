@@ -314,7 +314,7 @@ Heron Instance是一个JVM进程,只运行单一的工作.易于debug,log等.
 1. 分配physical plan:所有的SM相互联系后.分配spout 和bolts到不同的containers.
 1. 分配完,SM得到整个physical plan从TM.便于SM相互发现.然后SM相互发现,组成互连网络.
 1. 同时,HI发现本地Sm,下载physical plan.开始执行数据开始流经整个topology.
-1. 为了安全TM将physical plan写入到Zookeeper避免自己实效.
+1. 为了安全TM将physical plan写入到Zookeeper避免自己失效.
 
 
 - 错误情况
@@ -353,4 +353,4 @@ Heron Viz
 - 总结
 
 Heron, while delivering **6-14X** improvements in throughput, and
-**5-10X** reductions in tuple latencies
+**5-10X reductions in tuple latencies
