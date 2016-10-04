@@ -1,12 +1,6 @@
 # storm learn
 
 
-## 学习步骤
-1. 环境搭建
-1. 使用方式
-1. API
-1. 内部原理
-
 
 ## Jstorm
 storm java 实现
@@ -43,6 +37,8 @@ Twitter已经用Heron替换了Storm。此举将吞吐量最高提升了14倍，�
 
 Wednesday, May 25, 2016 Twitter宣布开源Heron
 [Open Sourcing Twitter Heron](https://blog.twitter.com/2016/open-sourcing-twitter-heron)
+
+
 [开源github twitter/heron](https://github.com/twitter/heron)
 
 
@@ -55,6 +51,8 @@ Twitter已经用Heron完全替换了Storm。前者现在每天处理“数10TB�
 
 几个说明
 [深度解析 Twitter Heron 大数据实时分析系统](http://dataunion.org/19297.html)
+
+
 [浅谈《【原创】深度分析Twitter Heron》](https://gist.github.com/maosongfu/c3aeb1bb5eb7b39fcdc5)
 
 [Flying faster with Twitter Heron](https://blog.twitter.com/2015/flying-faster-with-twitter-heron) 中文翻译版如下:
