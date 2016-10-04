@@ -11,12 +11,13 @@
 ## Jstorm
 storm java 实现
 [Jstorm github](https://github.com/alibaba/jstorm)
+
 [封仲淹：Storm 2.0将会基于JStorm，阿里巴巴全程参与](http://www.infoq.com/cn/news/2015/11/jstorm-apache-alibaba)
+
 [中文资料](https://github.com/alibaba/jstorm/wiki/JStorm-Chinese-Documentation)
 
 ## Heron Twitter新的流处理利器(开源了)
 
-Heron
 [Twitter Heron的深入解析(Twitter Heron与Storm的比较)](http://www.blogchong.com/post/117.html)
 
 
@@ -54,14 +55,12 @@ Twitter已经用Heron完全替换了Storm。前者现在每天处理“数10TB�
 - bolt 运算
 - 核心数据结构 tuple(包含一个或多个键值对的列表)
 
-	declareOutputFields
-	open
-	nextTuple
+	1. declareOutputFields
+	1. open
+	1. nextTuple
 
 - 集群的主要组成部分
 	- nodes 服务器
-
-
 
 - 高可靠性
 storm 保证spout发出的每条消息都能"完全处理",这也是storm区别于其他系统的地方.比如yahoo的S4.
@@ -89,7 +88,8 @@ storm 保证spout发出的每条消息都能"完全处理",这也是storm区别�
 定义一个stream应该如何分配数据给bolts上面的多个task
 
 
-## storm 论文翻译
+- storm 论文翻译
+
 [Storm@Twitter - SIGMOD’14 (Jun, 2014)](http://dl.acm.org/citation.cfm?id=2595641)
 
 [Streaming@Twitter - Bulletin of the IEEE Computer Society Technical Committee on Data Engineering (Jul, 2016)](http://sites.computer.org/debull/A15dec/p15.pdf)
@@ -99,15 +99,12 @@ storm 保证spout发出的每条消息都能"完全处理",这也是storm区别�
 架构
 扩展性
 容错
-
 可扩展的:容易增删
 弹性:容错
 可扩展
 效率
 易于管理:关键组件
-
-
-Nathan Marz 首先开发
+开发者Nathan Marz 
 2012年开源
 
 
@@ -120,11 +117,11 @@ Nathan Marz 首先开发
 
 	- 支持多版本。可同时将多个Storm版本运行YARN上，避免一个版本一个集群带来的维护成本
 
-## 数据模型和架构
-1. Nimbus 主节点:  分配和协调
-2. worker nodes运行1个或多个worker processes.
-1. worker processes在jvm上运行,运行1个或多个executors.
-1. Executors有1个或多个tasks.工作真正在task上执行
+- 数据模型和架构
+	1. Nimbus 主节点:  分配和协调
+	2. worker nodes运行1个或多个worker processes.
+	1. worker processes在jvm上运行,运行1个或多个executors.
+	1. Executors有1个或多个tasks.工作真正在task上执行
 每一个worker上运行一个Supervisor监督进程,和主节点通信.
 一个task是spout或bolt.一个task和一个executor
 
@@ -132,24 +129,26 @@ Nathan Marz 首先开发
 内部构件
 Supervisor和主节点相互沟通,报告情况,空闲资源.协调公馆zooKeeper
 
-## Supervisor
-每个节点上有监控进程
-1. 心跳信息,报告节点正常,每15s
-1. 同步监控,观察任务分配的改变.每10s.
-1. 同步进程,管理worker processes
+- Supervisor 每个节点上有监控进程
+	1. 心跳信息,报告节点正常,每15s
+	1. 同步监控,观察任务分配的改变.每10s.
+	1. 同步进程,管理worker processes
 
 
 每一个worker包含两过程
+
 1. worker receive thread
 1. worker send thread.
 
 每一个executor包含两个线程
+
 1. user logic thread 从in queue获取进来的tuple,执行工作.
 1. executor send thread.
 
 
 
 语义:
+
 1. 至多一次
 1. 至少一次
 
@@ -159,11 +158,13 @@ Supervisor和主节点相互沟通,报告情况,空闲资源.协调公馆zooKeep
 
 处理错误情况
 
-# 今后
+今后
+
 1. 状态不是在zookeeper就是在硬盘中.worker继续工作.提高稳定性.
 1. 当主节点出问题,继续工作
 1. 一个task不和executor严格绑定,得到更好效果.
 
+***
 ## Twitter Heron论文
 [Twitter Heron: Stream Processing at Scale](http://dl.acm.org/citation.cfm?id=2742788)
 
@@ -183,87 +184,173 @@ Heron
 1. 兼容stormAPI
 1. 高性能,资源少,调试,扩展性,易于管理
 
-## storm缺点
-一个节点可以运行大量work进程,但是每个都能死属于不同拓扑.
+- storm缺点
+一个节点可以运行大量work进程,但是每个都能属于不同拓扑.
 
 
-## Storm worker 架构局限性
-1. worker设计复杂
-1. 每个线程需要完成许多工作
-1. 调用多层,复杂度的相互作用,导致调度不确定性.
-1. 多种任务在一个JVM里运行.
-1. 多个任务将日志写到同一个文件中.
-1. 一个未处理的错误,将导致整个work错误
-1. 资源调度,storm认为每个worker相同.利用率低
-1. debug困难
-1. 并行度提升,每个组件试图和其他组件联系.
-1. storm使用多个线程和队列使任务在task和worker移动.每个tuple有4个线程.
+- Storm worker 架构局限性
+	- worker设计复杂
+	- 每个线程需要完成许多工作
+	- 调用多层,复杂度的相互作用,导致调度不确定性.
+	- 多种任务在一个JVM里运行.
+	- 多个任务将日志写到同一个文件中.
+	- 一个未处理的错误,将导致整个work错误
+	- 资源调度,storm认为每个worker相同.利用率低
+	- debug困难
+	- 并行度提升,每个组件试图和其他组件联系.
+	- storm使用多个线程和队列使任务在task和worker移动.每个tuple有4个线程.
 
-## Storm Nimbus问题
-1. 容易成为瓶颈.worker不相互隔离,互有影响.
-1. Zookeeper使用限制了topology的数量.Zookeeper成为瓶颈.
+- Storm Nimbus问题
+	1. 容易成为瓶颈.worker不相互隔离,互有影响.
+	1. Zookeeper使用限制了topology的数量.Zookeeper成为瓶颈.
 
-## 缺少Backpressure
+- 缺少Backpressure
 如果处理不了就丢弃
 
-## 效率
-1. 垃圾收集时间长
-1. 队列竞争
-1. 效率低
+- 效率
+	- 垃圾收集时间长
+	- 队列竞争
+	- 效率低
 
 
 ## Heron
 
 减轻管理的复杂性
-- Aurora scheduler(twitter自己的,没有另外实现.)
-	每个topolopg包含多个containers.
-- Topology Master
-第一个container运行
-- Stream Manager
-其余的container运行
 
-- Metrics Manager
+- 架构概述
+	- Aurora 调度器(twitter自己的,没有另外实现.), 调度抽象
+	- 每个topolopg包含多个containers.
+	- 元数据保存在zookeeper
+	- 热备份Topology Master
+	- Topology Master
+	- Metrics Manager
+	- Heron Instances
+	- 优点
+		- 多个container可以运行在一台机器上
+		- 根据资源进行调度
+		- standby Topology Master 没有单点故障
+		- 通讯使用协议缓冲
 
-- Heron Instances
-spouts/bolts that run user logic code
+- Topology Master(TM)
+管理拓扑,提供发现拓扑状态的单点信息.启动时创建临时节点.(???)
+	- 避免多个Topology Master成为同一个拓扑的master.提供统一视图
+	- 允许任何属于拓扑的节点发现TM
+不涉及处理过程,不是瓶颈.
 
-- 优点
-	- 多个container可以运行在一台机器上
-	- 根据资源进行调度
-	- standby Topology Master 没有单点故障
-	- 通讯使用协议缓冲
-
-- Topology Master
-优点  ???
-- Stream Manager
-Heron Instance 从本地的Heron Instance取得和发送数据.
-k个Stream Manager,相互连接
-比n个Instance相互连接,降低了复杂度.
+- Stream Manager(SM)
+有效管理tuples路由
+Heron Instance(HI)同本地的SM取得和发送数据.
+k个Stream Manager间相互连接,比n个Instance间相互连接,降低了复杂度.
 
 
 - Topology Backpressure
+使用Backpressure机制动态调整数据流经topology的速率.
 可以调整数据流的速率,不同的组件可以按照不同的速率运行.
+如果流入速率过快,将建立起过长的buffer对列或者丢弃tuples.
 - 实现方法
-	- TCP Backpressure:
-????
+	- TCP Backpressure
+	使用TCP窗口机制.SM和HI在container中通过TCP socket通信.HI处理慢了接收buffer将很快填满.SM意识到,传播.只有当慢的HI赶上进度才得以清除.
+	**容易实现,效果不好,阻塞清理十分缓慢,性能下降**
+	- Spout Backpressure(已经实现)
+	SM降低spout速度.当spout发送缓存填满.SM发送消息让其他是SMs降速.当慢的HI赶上来,发送消息让其他SM继续工作.
+	**可能不是最优,有缺点.但是不论topology深度如何,反应时间很短.**
+	- Stage-by-Stage Backpressure
+	控制信息通过SMs交换.
 
-***
-
-
-- Implementation
-
-Heron Instance是一个JVM进程,只运行单一的工作.
-- HI
-	- Single-threaded approach
-
-	- Two-threaded approach
-	Gateway thread
-	Task Execution thread
-
+	- Backpressure 实现
+	实现了Spout Backpressure,运行良好.当到达高点标记时触发Backpressure,直到到达低点标记.
+	**避免迅速震荡**
+	**tuple从spout发射出去,就不会放弃它.除非机器错误,使tuple失败更加有确定性.**
+	**运行的速度和最慢的组件相当**
 
 
 
+- Heron Instance
+Heron Instance是一个JVM进程,只运行单一的工作.易于debug,log等.
+数据传输的复杂性交给SM了.HI更加简单.
+
+- 两种实现HI的方式:
+
+	- Single-threaded实现HI
+		- TCP和loacl SM通信,等待tuples.
+		- tuple到达,处理
+		- 处理后将tuple缓存
+		- 缓存到达阈值,发送给local SM
+
+		- 优点: 简单 
+		- 缺点: user code 可能因为很多原因被阻塞
+		(1)系统sleep(2)读写调用(3)同步原语
+
+		阻塞不理想,阻塞时间不可以预知.不知HI状态是否正常.
+
+	- Two-threaded 实现HI
+		- Gateway thread
+		通信和数据出入HI.和SM和metrics manager通信.接收达到的tuple
+		- Task Execution thread
+		运行user code
+		两种方法open和prepare
+		若是bolt,调用execute
+		若是spout,调用nextTuple
+		收集运行的信息
+		- 通信Gateway和 Task Execution通过单向对列进行通信
+		Gateway 通过data-in:将tuple送到Task Execution
+		Task Execution通过data-out将tuple送到gateway
+		Task Execution通过metrics-out将收集的信息发送给gateway.
+		- 垃圾收集问题
+		定期检查对列的容纳能力,适当改变对列的大小.
 
 
 
 
+- Metrics Manager 特征管理
+收集系统和用户特征,发送到内部的监控系统上.
+
+
+- 启动顺序和故障方案
+
+1. 提交topology后,调度器scheduler调度topology containers到一些机器.
+1. Stream Manager (TM)在第一个containers出现,被zookeeper发现.
+1. 同时其他container的Stream Manager联系Zookeeper去发现Stream Manager.SM和TM间定期发送心跳信息.
+1. 分配physical plan:所有的SM相互联系后.分配spout 和bolts到不同的containers.
+1. 分配完,SM得到整个physical plan从TM.便于SM相互发现.然后SM相互发现,组成互连网络.
+1. 同时,HI发现本地Sm,下载physical plan.开始执行数据开始流经整个topology.
+1. 为了安全TM将physical plan写入到Zookeeper避免自己实效.
+
+
+- 错误情况
+
+
+1. TM失败,重启从Zookeeper恢复状态.standby TM成为主TM.重启的TM成为standby.
+1. SM失败.和TM联系恢复.其他SM从TM那发现新的SM.
+1. HI失败.从SM那得到physical plan,确定spout or bolt.
+1. container安排到其他机器上,按照上面的方式联系TM.恢复SM和HI.
+
+
+- 总结
+
+1. 资源提供清楚的抽象.
+1. HI仅允许单一任务,容易debug
+1. 对失败和减慢透明.颗粒收集信息,容易找出问题.
+1. 组件级资源分配,组件分配特定资源,避免浪费.
+1. Topology Master允许每个拓扑独立管理.一个拓扑不影响其他.
+1. backpressure机制,实现输出结果的一致速率.
+**关键机制使topology从一组容器迁移到另外一组.**
+1. 无单点故障
+
+
+- 生产上使用
+Heron Tracker
+Heron UI
+Heron Viz
+
+- 实验Word Count Topology实验175Kword
+
+1. Heron **10-14X**倍加速比storm in all these experiments.
+1. Heron latency is **5-15X** lower than that of the Storm
+1. CPU usage of Heron is **2-3X** lower than that of the Storm,
+
+
+- 总结
+
+Heron, while delivering **6-14X** improvements in throughput, and
+**5-10X** reductions in tuple latencies
