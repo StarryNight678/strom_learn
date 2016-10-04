@@ -20,6 +20,7 @@ JStorm 比Storm更稳定，更强大，更快， Storm上跑的程序，一行�
 [中文资料](https://github.com/alibaba/jstorm/wiki/JStorm-Chinese-Documentation)
 
 - 结论
+
 1. JStorm 0.9.0 在使用Netty的情况下，比Storm 0.9.0 使用Netty情况下，快10%， 并且JStorm 1. Netty是稳定的而Storm的Netty是不稳定的
 1. 在使用ZeroMQ的情况下， JStorm 0.9.0 比Storm 0.9.0 快30%
 
