@@ -114,6 +114,81 @@ Stream Grouping 定义一个stream如何分配bolts上面的多个task.
 确保spout发出的每个消息都被完整处理.
 tuple tree超时值默认30s.
 
+读取消息,消息设置为 "pending"状态.只有得到客户端的应答后,ack fail调用后才会从队列中真正删除.
+
+
+锚定:指定的节点增加了一个新节点.
+
+多重锚定 **???**
+P79-81
+
+
+- 高效实现tupletree
+
+1. acker跟踪DAG中每个消息,可以设置并行度.通过参数设置,大量消息时应提高并行度
+1. acker可以有多个.使用哈希算法,确定spout id 对于的acker.
+1. 20字节跟踪一棵树.
+1. <spout id,ack val 64bit>  ack val= 0 完全处理.
+
+- 选择可靠级别
+
+关闭消息可靠机制
+1. 消息树减半,每个消息不需要应答.
+1. 减少消息大小,没tuple不需要记录根id
+
+
+方法:
+1. 参数
+1. spout发送时不指定id
+1. 发送消息不锚定
+
+
+- 集群各级容错,各种错误下数据不丢失
+
+任务集失败
+1. bolt失败,消息未应答,acker超时失败,spout fail调用
+1. acker失败,失败前所有消息超时失败,spout fail调用
+1. spout 失败,外部设备复杂消息完整性,将队列中处于pending 状态消息放回队列
+
+slot失败
+1. worker失败,bolt/spout失败,supervisor负责监控,supervisor尝试重启
+1. supervisor失败,无状态,不影响当前任务.需要外部监控重启
+1. nimbus失败,无状态,不影响当前任务.无法提交新任务.需要外部监控重启
+
+机器故障
+1. storm节点故障,nimbus将任务转移到其他节点
+1. zookeeper故障,zookeeper保证少于半数的机器宕机仍正常工作.
+
+
+## 6一致性任务
+
+保证tuple只被处理一次.
+一致性事物组件
+
+- 简单设计1:强顺序流
+- 简单设计2"强顺序batch流
+使用CoordinateBolt
+
+- 7DRPC
+
+- 8Trident
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
