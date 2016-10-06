@@ -410,5 +410,6 @@ Scheduler — Heron requires a scheduler to run its topologies. It can be deploy
 
 参考:
 [Twitter 开源了数据实时分析平台 Heron](https://www.oschina.net/news/73811/twitter-open-source-heron)
+
 视频:
 [witter Heron作者之一的符茂松老师也曾在QCon 2015 上海站做了有关Heron的精彩分享，我们再来回顾一下符茂松老师在QCon上的分享，深入了解Heron的设计思路与架构之道。](https://v.qq.com/iframe/preview.html?vid=m03024pc6ql&amp)
