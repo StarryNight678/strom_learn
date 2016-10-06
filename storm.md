@@ -252,10 +252,20 @@ Heron
 	- 允许任何属于拓扑的节点发现TM
 不涉及处理过程,不是瓶颈.
 
+![tmaster](http://twitter.github.io/heron/img/tmaster.png)
+
+
 - Stream Manager(SM)
+
+**C++实现,复杂的内存操作.手动内存管理.Instance相当于手机的话,SM相当于手机的信号塔**
+
+
 有效管理tuples路由
 Heron Instance(HI)同本地的SM取得和发送数据.
 k个Stream Manager间相互连接,比n个Instance间相互连接,降低了复杂度.
+
+SM的一个网络的可视说明
+![data-flow](http://twitter.github.io/heron/img/data-flow.png)
 
 
 - Topology Backpressure
@@ -277,6 +287,19 @@ k个Stream Manager间相互连接,比n个Instance间相互连接,降低了复杂
 	**避免迅速震荡**
 	**tuple从spout发射出去,就不会放弃它.除非机器错误,使tuple失败更加有确定性.**
 	**运行的速度和最慢的组件相当**
+
+- 例子
+
+![backpressure](http://twitter.github.io/heron/img/backpressure1.png)
+
+A中的B3成为最慢的.A中的SM拒绝C和D的输入.导致填满C和D的socket buffers.
+
+在这种情况下,反压机制介入:
+
+A中的SM向B,C,D发送消息.B,C,D检查[physical-plan](http://twitter.github.io/heron/docs/concepts/topologies#physical-plan)减少输入匹配B3的速度.
+当B3恢复,A中SM通知其他组件速度也将恢复正常.
+
+![backpressure2](http://twitter.github.io/heron/img/backpressure2.png)
 
 
 
@@ -331,6 +354,9 @@ Heron Instance是一个JVM进程,只运行单一的工作.易于debug,log等.
 1. 同时,HI发现本地Sm,下载physical plan.开始执行数据开始流经整个topology.
 1. 为了安全TM将physical plan写入到Zookeeper避免自己实效.
 
+![topology-submit-sequence-diagram](http://twitter.github.io/heron/img/topology-submit-sequence-diagram.png)
+
+
 
 - 错误情况
 
@@ -369,3 +395,20 @@ Heron Viz
 
 Heron, while delivering **6-14X** improvements in throughput, and
 **5-10X** reductions in tuple latencies
+
+## Heron 其他
+
+- 组件调度器
+Scheduler — Heron requires a scheduler to run its topologies. It can be deployed on an existing cluster running alongside other big data frameworks. Alternatively, it can be deployed on a cluster of its own. Heron currently supports several scheduler options:
+
+	- [Aurora 开源](http://twitter.github.io/heron/docs/operators/deployment/schedulers/aurora)
+	[github.com/apache/aurora](https://github.com/apache/aurora)
+	- Local
+	- [Slurm 开源(Experimental)](http://twitter.github.io/heron/docs/operators/deployment/schedulers/slurm)
+	- [YARN (Experimental)](http://twitter.github.io/heron/docs/operators/deployment/schedulers/yarn)
+
+
+参考:
+[Twitter 开源了数据实时分析平台 Heron](https://www.oschina.net/news/73811/twitter-open-source-heron)
+视频:
+[witter Heron作者之一的符茂松老师也曾在QCon 2015 上海站做了有关Heron的精彩分享，我们再来回顾一下符茂松老师在QCon上的分享，深入了解Heron的设计思路与架构之道。](https://v.qq.com/iframe/preview.html?vid=m03024pc6ql&amp)
