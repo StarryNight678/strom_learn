@@ -7,3 +7,7 @@
 
 - 数据流分组
 
+- 锚定tuple
+建立tuple和衍生出的tuple间的对应关系.下游的tuple通过应答确认,报错或超时加入tuple对列.
+非锚定的tuple处理失败,原始的tuple不会重新发送.
+
