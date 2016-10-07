@@ -183,25 +183,30 @@ Supervisor和主节点相互沟通,报告情况,空闲资源.协调公馆zooKeep
 ## Twitter Heron论文
 [Twitter Heron: Stream Processing at Scale](http://dl.acm.org/citation.cfm?id=2742788)
 
+[论文Youtube视频讲解,英文](https://www.youtube.com/watch?v=pUaFOuGgmco)
+
+中文视频:[witter Heron作者之一的符茂松也曾在QCon 2015 上海站介绍Heron，深入了解Heron的设计思路与架构之道。](https://v.qq.com/iframe/preview.html?vid=m03024pc6ql&amp)
+
+
 1. 扩展性更好
 1. 性能更好
 1. 更容易调试
 1. 易于管理
 
-## storm问题
-- 难于调试
-storm大量组件的工作乱塞进一个处理进程.难于调试.Heron更清晰的map图.
-- storm需要专门的硬件去运行topology
-- 笨拙的管理机器.
+
 
 Heron
 
 1. 兼容stormAPI
 1. 高性能,资源少,调试,扩展性,易于管理
 
+
+Storm架构
+![storm archietecture](http://i.imgur.com/ZBHXsAV.png)
+
 - storm缺点
 一个节点可以运行大量work进程,但是每个都能属于不同拓扑.
-
+难于调试,storm大量组件的工作乱塞进一个处理进程.
 
 - Storm worker 架构局限性
 	- worker设计复杂
@@ -210,14 +215,38 @@ Heron
 	- 多种任务在一个JVM里运行.
 	- 多个任务将日志写到同一个文件中.
 	- 一个未处理的错误,将导致整个work错误
-	- 资源调度,storm认为每个worker相同.利用率低
+	- 资源调度,storm认为每个worker相同.利用率低.经常导致超量配置.
 	- debug困难
 	- 并行度提升,每个组件试图和其他组件联系.
 	- storm使用多个线程和队列使任务在task和worker移动.每个tuple有4个线程.
 
+worker:复杂的层级,难于调试,难于调优
+![worker](http://i.imgur.com/6DD1FZU.png)
+
+
+storm worker数据流
+
+1. 队列争夺
+1. 大量语言实现.不同语言实现不同的库
+![storm worker数据流](http://i.imgur.com/wmMpFuK.png)
+
 - Storm Nimbus问题
-	1. 容易成为瓶颈.worker不相互隔离,互有影响.
-	1. Zookeeper使用限制了topology的数量.Zookeeper成为瓶颈.
+
+	- 容易成为瓶颈.worker不相互隔离,互有影响.
+	- Server UI 负载重,比较慢.
+
+- Zookeeper问题
+负载重使用限制了topology的数量.Zookeeper成为瓶颈.
+
+twitter 尝试分离zoonkeeper,分离支持数百节点.还不够.
+![separate zoonkeeper](http://i.imgur.com/M25UBWV.png)
+
+zoonkeeper负载
+![load](http://i.imgur.com/9x0zVsa.png)
+
+
+降低负载
+![](http://i.imgur.com/xaS7N9a.png)
 
 - 缺少Backpressure
 如果处理不了就丢弃
@@ -228,9 +257,15 @@ Heron
 	- 效率低
 
 
+
+
 ## Heron
 
 减轻管理的复杂性
+
+架构
+![](http://i.imgur.com/VPcaHQm.png)
+
 
 - 架构概述
 	- Aurora 调度器(twitter自己的,没有另外实现.), 调度抽象
@@ -251,8 +286,8 @@ Heron
 	- 避免多个Topology Master成为同一个拓扑的master.提供统一视图
 	- 允许任何属于拓扑的节点发现TM
 不涉及处理过程,不是瓶颈.
+![TM](http://i.imgur.com/ra4Kudl.png)
 
-![tmaster](http://twitter.github.io/heron/img/tmaster.png)
 
 
 - Stream Manager(SM)
@@ -337,6 +372,7 @@ Heron Instance是一个JVM进程,只运行单一的工作.易于debug,log等.
 		- 垃圾收集问题
 		定期检查对列的容纳能力,适当改变对列的大小.
 
+![](http://i.imgur.com/KYvTtLt.png)
 
 
 
@@ -354,7 +390,7 @@ Heron Instance是一个JVM进程,只运行单一的工作.易于debug,log等.
 1. 同时,HI发现本地Sm,下载physical plan.开始执行数据开始流经整个topology.
 1. 为了安全TM将physical plan写入到Zookeeper避免自己实效.
 
-![topology-submit-sequence-diagram](http://twitter.github.io/heron/img/topology-submit-sequence-diagram.png)
+![](http://i.imgur.com/KNuEDrD.png)
 
 
 
@@ -411,5 +447,4 @@ Scheduler — Heron requires a scheduler to run its topologies. It can be deploy
 参考:
 [Twitter 开源了数据实时分析平台 Heron](https://www.oschina.net/news/73811/twitter-open-source-heron)
 
-视频:
-[witter Heron作者之一的符茂松老师也曾在QCon 2015 上海站做了有关Heron的精彩分享，我们再来回顾一下符茂松老师在QCon上的分享，深入了解Heron的设计思路与架构之道。](https://v.qq.com/iframe/preview.html?vid=m03024pc6ql&amp)
+
