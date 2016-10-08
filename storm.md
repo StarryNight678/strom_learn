@@ -27,7 +27,53 @@ JStorm 比Storm更稳定，更强大，更快， Storm上跑的程序，一行�
 1. 优化缓冲map性能
 1. Java比Clojure更底层
 
+[Jstorm简介（参考storm的实时流式计算框架）](http://xinklabi.iteye.com/blog/2232257)
+
+重要的文章Jstorm和Heron对比
+[阿里中间件 揭开 Heron 性能面纱](http://jm.taobao.org/2016/08/04/heron-performance/)
+
+他们告知 他们也就只能跑20w qps， 并且告诉 一个很大问题， container内部的stream－manager的瓶颈是50w qps， 也就是一个container所有内部通信和外部通信的总和上限就是50w。
+性能分析
+
+heron 一直号称是storm 10倍性能， 但heron 对比的对象是storm 0.8.2, 这是3年前的storm，是上一代的storm， 而最新版storm 1.0.2 早已经是storm 0.8.2 的十倍性能。
+
+- heron在性能上存在2个致命缺陷
+	- 失去了整个业界性能优化很大的一个方向， 流计算图优化。其核心思想就是让task尽量绑在一个进程中， 这样task之间的数据，可以直接走进程内通信，无需反序列化和序列化。
+	- 为了提高稳定性， heron将每个task 独立成为一个进程， 则会产生一个新的问题，就是task之间的通信都不会有进程内通信， 所有task通信都是走网络， 都要经过序列化和反序列化， 引入了大量额外的计算.
+	- 如果想要图优化， 则heron必须引入一层新的概念， 将多个task 链接到一个进程中， 但这个设计和heron的架构设计理念会冲突
+
+每个container 的stream manager 会成为瓶颈， 一个container 内部的所有task 的数据（无论数据对外还是对内）通信都必须经过stream manager， 一个进程他的网络tps是有上限的， 而stream-manager的上限就是50w qps， 则表示一个container的内部通道和外部通道总和就是50w qps. 大家都必须抢这个资源。
+
+原来的一次网络通信， 现在会变成3次网络通信， task －》 当前container的streammanager －》 目标container的stream manager －》 目标task
+
+但今天的storm已经今非昔比，而jstorm更是不一样了。 jstorm反压早就做到了第三版， 当下游数据发生堆积时， 上游spout早就做限流降级， 应用无需申请超量的资源。
+
+今天jstorm-on-yarn/jstorm-on-docker, jstorm-on-yarn 已经上线，就是在大集群上部署多个逻辑集群， 让大集群削峰填谷和资源隔离都非常成熟。
+
+jstorm 0.9.0/storm0.9.5 开始就有了task粒度资源调度器，就是task按自己需要，申请多少cpu和多少内存就分配多少内存。**但jstorm从0.9.5 开始，调度的资源从task粒度恢复到worker粒度**， 原因是：
+
+1. 集群跑一段时间后，容易出现碎片， 即有的机器上有cpu slot但没有内存 slot， 有的机器上有内存slot但没有cpu slot
+1. 业务方很少遵守task 粒度去申请资源，反而偏爱worker粒度，简单粗暴方式。
+2. 业务方有时超量申请资源， 只需要10个cpu slot，但却申请20个cpu
+
+最终jstorm的方案是， 资源的粒度是到worker级别，但每台机器上配置动态监测， 实时根据负载情况调整自己的资源池策略， 很有效解决上述问题。
+
 ![](http://i.imgur.com/Yiyc94X.png)
+
+另外Heron 资源上其实会引入1个小问题， 单个heron container会比单个jstorm／storm worker更消耗资源。
+假设3个task运行在一个worker或container中，每个task 需要2g内存， 如果是jstorm或storm， 可能5g 内存就够了， 每个task之间可以临时share一下， 而heron container 则需要7g 甚至8g， 每个task 都需要2g，而且不能相互share， 另外一个container中还有streammanager／metricsmanager， 他们都需要内存。
+原本worker级别的公共线程，在heron中现在需要在每个task进程中都配置上， 比如netty进程池，心跳线程， metrics 线程等等， 这些都在消耗cpu。
+
+[深度分析Twitter Heron](http://www.longda.us/2015/06/04/heron/)
+论文分析的很好.
+最后总结：
+Heron更适合超大规模的机器， 超过1000台机器以上的集群。 在稳定性上有更优异的表现， 在性能上，表现一般甚至稍弱一些，在资源使用上，可以和其他编程框架共享资源，但topology级别会更浪费一些资源。
+另外应用更偏向于大应用，小应用的话，会多一点点资源浪费， 对于大应用，debug-ability的重要性逐渐提升。 另外对于task的设计， task会走向更重更复杂， 而JStorm的task是向更小更轻量去走。
+未来JStorm可以把自动降级策略引入， 通过实现阿里妈妈的ASM， debug-ability应该远超过storm， 不会逊色于Heron， 甚至更强。
+
+来自Twitter的反击
+[浅谈《【原创】深度分析Twitter Heron》](https://gist.github.com/maosongfu/c3aeb1bb5eb7b39fcdc5)
+
 
 
 ## Heron Twitter新的流处理利器(开源了)
@@ -56,7 +102,6 @@ Twitter已经用Heron完全替换了Storm。前者现在每天处理“数10TB�
 [深度解析 Twitter Heron 大数据实时分析系统](http://dataunion.org/19297.html)
 
 
-[浅谈《【原创】深度分析Twitter Heron》](https://gist.github.com/maosongfu/c3aeb1bb5eb7b39fcdc5)
 
 [Flying faster with Twitter Heron](https://blog.twitter.com/2015/flying-faster-with-twitter-heron) 中文翻译版如下:
 [Twitter发布新的大数据实时分析系统Heron](http://geek.csdn.net/news/detail/33750)
