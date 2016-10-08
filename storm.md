@@ -27,6 +27,9 @@ JStorm 比Storm更稳定，更强大，更快， Storm上跑的程序，一行�
 1. 优化缓冲map性能
 1. Java比Clojure更底层
 
+![](http://i.imgur.com/Yiyc94X.png)
+
+
 ## Heron Twitter新的流处理利器(开源了)
 
 [Twitter Heron的深入解析(Twitter Heron与Storm的比较)](http://www.blogchong.com/post/117.html)
