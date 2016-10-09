@@ -1,7 +1,6 @@
 # storm learn
 
 
-
 ## Jstorm
 storm java 实现
 
@@ -106,97 +105,6 @@ Twitter已经用Heron完全替换了Storm。前者现在每天处理“数10TB�
 [Flying faster with Twitter Heron](https://blog.twitter.com/2015/flying-faster-with-twitter-heron) 中文翻译版如下:
 [Twitter发布新的大数据实时分析系统Heron](http://geek.csdn.net/news/detail/33750)
 
-## storm
-
-数据流的实时处理,数据到达时立即在内存中处理
-
-
-拓扑 topology
-
-- stream 数据流
-- spout	数据流生成者
-- bolt 运算
-- 核心数据结构 tuple(包含一个或多个键值对的列表)
-
-	1. declareOutputFields
-	1. open
-	1. nextTuple
-
-- 集群的主要组成部分
-	- nodes 服务器
-
-- 高可靠性
-storm 保证spout发出的每条消息都能"完全处理",这也是storm区别于其他系统的地方.比如yahoo的S4.
-消息树
-
-- **事物性拓扑**
-
-多语言协议
-每个tuple处理时都需要进行编解码,处理吞吐量有很大的影响.
-
-- 高效
-使用zeroMQ作为底层的消息队列,消息能快速处理
-
-
-- spout
-	- nextTuple
-	- ask  成功处理
-	- fail 处理失败
-- bolts
-封装所有的处理逻辑
-过滤,聚合,查询数据库
-	- `OutputFieldsDeclarer.declareStrean`  定义Stream
-	- `OutputCollector.emit` 选择要发射的Stream
-- Stream Groupings
-定义一个stream应该如何分配数据给bolts上面的多个task
-
-
-- storm 论文翻译
-
-[Storm@Twitter - SIGMOD’14 (Jun, 2014)](http://dl.acm.org/citation.cfm?id=2595641)
-
-[Streaming@Twitter - Bulletin of the IEEE Computer Society Technical Committee on Data Engineering (Jul, 2016)](http://sites.computer.org/debull/A15dec/p15.pdf)
-
-[Twitter Heron: Stream Processing at Scale - SIGMOD’15 (May, 2015)](http://dl.acm.org/citation.cfm?id=2742788)
-
-架构
-扩展性
-容错
-可扩展的:容易增删
-弹性:容错
-可扩展
-效率
-易于管理:关键组件
-开发者Nathan Marz 
-2012年开源
-
-
-**YARN**在hadoop上使用  storm[Storm On YARN](http://dongxicheng.org/mapreduce-nextgen/storm-on-yarn/) Storm On YARN带来的好处相比于将Storm部署到一个独立的集群中，Storm On YARN带来的好处很多，主要有以下几个：
-
-- 好处
-	- 弹性计算资源。 将Storm运行到YARN上后，Storm可与其他应用程序（比如MapReduce批处理应用程序）共享整个集群中的资源，这样，当Storm负载骤增时，可动态为它增加计算资源，而当负载减小时，可释放部分资源，从而将这些资源暂时分配给负载更重的批处理应用程序。
-
-	- 共享底层存储。 Storm可与运行在YARN上的其他框架共享底层的一个HDFS存储系统，可避免多个集群带来的维护成本，同时避免数据跨集群拷贝带来的网络开销和时间延迟
-
-	- 支持多版本。可同时将多个Storm版本运行YARN上，避免一个版本一个集群带来的维护成本
-
-- 数据模型和架构
-	1. Nimbus 主节点:  分配和协调
-	2. worker nodes运行1个或多个worker processes.
-	1. worker processes在jvm上运行,运行1个或多个executors.
-	1. Executors有1个或多个tasks.工作真正在task上执行
-每一个worker上运行一个Supervisor监督进程,和主节点通信.
-一个task是spout或bolt.一个task和一个executor
-
-数据分发策略
-内部构件
-Supervisor和主节点相互沟通,报告情况,空闲资源.协调公馆zooKeeper
-
-- Supervisor 每个节点上有监控进程
-	1. 心跳信息,报告节点正常,每15s
-	1. 同步监控,观察任务分配的改变.每10s.
-	1. 同步进程,管理worker processes
-
 
 每一个worker包含两过程
 
@@ -208,18 +116,6 @@ Supervisor和主节点相互沟通,报告情况,空闲资源.协调公馆zooKeep
 1. user logic thread 从in queue获取进来的tuple,执行工作.
 1. executor send thread.
 
-
-
-语义:
-
-1. 至多一次
-1. 至少一次
-
-有向非循环图(directed acyclic graph,DAG)
-64-bit “message id”每个tuple上.provenance tree.
-通过异或的方式处理.
-
-处理错误情况
 
 今后
 
