@@ -1,4 +1,8 @@
-# Storm编译运行
+## Storm编译运行
+
+## maven使用
+
+- 更换镜像
 
 [ubuntu eclipse 安装maven插件](http://askubuntu.com/questions/141204/what-is-the-correct-way-to-install-maven-and-eclipse)
 
@@ -38,10 +42,59 @@
 </mirror>
 ```
 
+- 入门文档
+
+[mvn官方入门文档](http://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
+
+1. 创建工程
+
+```
+mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+```
+
+目录结构
+
+  ./pom.xml
+  ./src
+  ./src/test
+  ./src/test/java
+  ./src/test/java/com
+  ./src/test/java/com/mycompany
+  ./src/test/java/com/mycompany/app
+  ./src/test/java/com/mycompany/app/AppTest.java
+  ./src/main
+  ./src/main/java
+  ./src/main/java/com
+  ./src/main/java/com/mycompany
+  ./src/main/java/com/mycompany/app
+  ./src/main/java/com/mycompany/app/App.java
+
+
 编译运行:
-初始化安装storm所需依赖：$ 
+初始化安装storm所需依赖：
+``` 
 mvn clean install -DskipTests=true
+```
+
+使用Maven打包storm拓扑：
+```
+mvn package
+```
+编译
+```
+mvn compile
+```
+
+## Storm 编译
+
+```
+<dependency>
+  <groupId>storm</groupId>
+  <artifactId>storm</artifactId>
+  <version>1.0.2</version>
+</dependency>
+```
+
+storm target/word-count-1.0-SNAPSHOT.jar storm.blueprints.chapter1.v3.WordCountTopology
 
 
-使用Maven打包storm拓扑：$ mvn package
-搭建好运行环境并提交：
