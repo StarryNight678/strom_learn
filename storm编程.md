@@ -87,6 +87,7 @@ mvn compile
 
 ## Storm 编译
 
+依赖
 ```
 <dependency>
   <groupId>storm</groupId>
@@ -95,6 +96,85 @@ mvn compile
 </dependency>
 ```
 
-storm target/word-count-1.0-SNAPSHOT.jar storm.blueprints.chapter1.v3.WordCountTopology
+1. storm jar 提交
+1. storm kill 关闭
+1. storm deactivate topology_name  停止发送tuple
+1. storm activate topology_name    恢复发送tuple
+1. storm rebalancce topology_name  
+1. storm remoteconfvalue topology_name  查看公共参数
 
 
+
+
+storm.blueprints.chapter1.v3.WordCountTopology  WordCountTopology
+
+
+## storm Jstorm  Heron 性能测试
+
+- storm
+
+storm jar  ./target/performance-test-strom-1.0.jar   com.alibaba.jstorm.performance.test.FastWordCountTopology
+
+
+storm deactivate  FastWordCountTopology
+storm activate FastWordCountTopology
+storm kill FastWordCountTopology
+
+- heron
+
+heron submit local com.alibaba.jstorm.performance.test.FastWordCountTopology FastWordCountTopology
+
+heron submit --verbose local performance-test-heron-1.0.jar com.alibaba.jstorm.performance.test.FastWordCountTopology  FastWordCountTopology  --deploy-deactivated
+
+heron submit local \
+~/.heron/examples/heron-examples.jar \
+com.twitter.heron.examples.ExclamationTopology \
+ExclamationTopology \
+--deploy-deactivated
+
+
+
+heron submit local  \
+./target/performance-test-heron-1.0.jar  \
+com.alibaba.jstorm.performance.test.PerformanceTestTopology  \
+PerformanceTestTopology  \
+--deploy-deactivated
+
+
+heron submit local performance-test-heron-1.0.jar com.alibaba.jstorm.performance.test.PerformanceTestTopology simple.yaml
+heron submit local performance-test-heron-1.0.jar com.alibaba.jstorm.performance.test.FastWordCountTopology simple.yaml 
+
+
+heron submit local  \
+./target/performance-test-heron-1.0.jar  \
+com.alibaba.jstorm.performance.test.PerformanceTestTopology  \
+PerformanceTestTopology  \
+
+
+java -jar /tmp/storm-starter.jar ExclamationTopology
+
+
+src/main/java/com/alibaba/jstorm/performance/test/PerformanceTestTopology.java
+src/main/java/com/alibaba/jstorm/performance/test/WordCountTopology.java
+src/main/java/com/alibaba/jstorm/performance/test/FastWordCountTopology.java
+
+
+heron submit local  \
+./target/performance-test-heron-1.0.jar  \
+com.alibaba.jstorm.performance.test.PerformanceTestTopology  \
+PerformanceTestTopology  \
+--deploy-deactivated
+
+java -jar 
+
+
+ heron submit local \
+~/.heron/examples/heron-examples.jar \
+com.twitter.heron.examples.MultiStageAckingTopology \
+MultiStageAckingTopology \
+--deploy-deactivated
+
+
+heron activate local MultiStageAckingTopology
+heron deactivate local MultiStageAckingTopology
+heron kill local MultiStageAckingTopology
