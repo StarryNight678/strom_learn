@@ -7,6 +7,11 @@
 1. 监控太简单
 1. 对ZK 访问频繁
 
+RPC OOM（OOM - Out of Memory，内存溢出 ——俗称雪崩问题）一直没有解决
+
+原生Storm RPC：Zeromq 使用堆外内存，导致OS 内存不够，Netty 导致OOM；
+JStorm底层RPC 采用netty + disruptor，保证发送速度和接受速度是匹配的，彻底解决雪崩问题
+
 - 更稳定（1） -- nimbus HA
 
 Nimbus 实现HA:当一台nimbus挂了，自动热切到备份nimbus
@@ -86,3 +91,5 @@ Cgroups最初的目标是为资源管理提供的一个统一的框架，既整�
 3. 记录进程组使用的资源数量（Accounting ）。比如：可以使用cpuacct子系统记录某个进程组使用的cpu时间
 4. 进程组隔离（isolation）。比如：使用ns子系统可以使不同的进程组使用不同的namespace，以达到隔离的目的，不同的进程组有各自的进程、网络、文件系统挂载空间。
 5. 进程组控制（control）。比如：使用freezer子系统可以将进程组挂起和恢复。
+
+
