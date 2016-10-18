@@ -107,17 +107,65 @@ a1,a2,a3,b1,b2,b3,c1,c2,c3
 a1,b1,c1,a2,b2,c2,a3,b3,c3
 ```
 
+
 - 调度存在的问题,导致资源分配不均.**分配时没有考虑,CPU和内存**
 
-```mermaid
-graph TD
-    client1-->|read / write|SVN((SVN server))
-    client2-->|read only|SVN
-    client3-->|read / write|SVN
-    client4-->|read only|SVN
-    client5(...)-->SVN
-    SVN---|store the data|sharedrive
+例如:topology1 使用两个slot
+分配 a1,b1
+
+其余排序
+因为去掉a1  b1
+
+各个分组为
+
+1. a2 a3  
+1. b2 b3  
+1. c1 c2 c3
+
+分别取每个分组的第一个元素,排序结果如下:
 ```
+a2,b2,c1,a3,b3,c2,c3
+```
+
+topology2 使用4个slot
+使用a2,b2,c1,a3
+
+现在a上的3个topology用完了.b上用了两个slot.c只用了一个slot.
+
+- 解决方法
+
+1. 简单的变换排序算法,按照slot和port排序.
+1. 然后在每个分组内部分别进行排序(可有可无)
+
+
+- schedule-topologies-evenly
+
+1. 获取需要进行任务调度的topology
+1. 取出需要进行调度的每个topology,获取topology-id,调用**schedule-topology**,得到新的分配<node+port,executors>
+
+-  schedule-topology
+
+- Supervior
+
+监听Nimbus的任务分配
+
+- worker
+
+线程间通信使用Disruptor,进程间通信 worker和worker通信使用IConext接口实现,可以使用Netty也可以是ZMQ,默认是Netty.
+
+每个worker会绑定一个socket端口作为数据的输入,作为数据端口一直监听.
+
+
+1. receive thread将每个executor所需要的数据放入receive-queue-map 中.
+1. 每个executor获取自己需要的数据
+1. 发送数据,kryoTupleSerializer将数据**序列号**
+1. 发送数据放入transfer-queue中,
+1. 通过transfer-thread完成数据的发送
+
+如果在同一个worker内,不需要进行序列化操作.
+直接调用disruptor的publish方法,放入到接收方的对垒中.
+
+P62
 
 ## 5Storm运维监控
 ## 6Storm扩展
