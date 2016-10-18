@@ -12,6 +12,8 @@ RPC OOM（OOM - Out of Memory，内存溢出 ——俗称雪崩问题）一直�
 原生Storm RPC：Zeromq 使用堆外内存，导致OS 内存不够，Netty 导致OOM；
 JStorm底层RPC 采用netty + disruptor，保证发送速度和接受速度是匹配的，彻底解决雪崩问题
 
+![](http://i.imgur.com/6ea5RVW.png)
+
 - 更稳定（1） -- nimbus HA
 
 Nimbus 实现HA:当一台nimbus挂了，自动热切到备份nimbus
