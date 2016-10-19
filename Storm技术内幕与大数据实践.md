@@ -165,11 +165,15 @@ topology2 使用4个slot
 如果在同一个worker内,不需要进行序列化操作.
 直接调用disruptor的publish方法,放入到接收方的对垒中.
 
-P62
 
 ## 5Storm运维监控
 ## 6Storm扩展
+
+
+使用cgroup 进行资源的隔离.
 ## 7Storm开发
 ## 8基于Storm的实时数据平台
 ## 9大数据应用案例
 ## 10使用经验和优化
+
+rebalance
