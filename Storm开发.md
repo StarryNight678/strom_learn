@@ -1,7 +1,7 @@
 # Storm开发
 
 
-问题:
+## 问题:
 消息处理 best effort方式.
 [可靠性 Guaranteeing Message Processing](http://storm.apache.org/releases/1.0.2/Guaranteeing-message-processing.html)
 
@@ -129,6 +129,7 @@ Pacemaker
 Pacemaker是简单的键值存储.维护心跳信息,心跳信息不需要存储到硬盘中,在内存中存储.
 Pacemaker作为单个守护程序实例运行，使其成为潜在的单点故障。
 
+相比zoonkeeper使用的资源更少. Gigabit networking下,the real limit is likely around 2000-3000 nodes. 
 ```
 
-```
+``` 
