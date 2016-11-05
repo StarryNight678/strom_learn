@@ -50,6 +50,9 @@
 
 ```
 mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+org.apache.storm.starter
+
 ```
 
 目录结构
@@ -182,3 +185,5 @@ heron kill local MultiStageAckingTopology
 ## 性能测试
 
 [yahoo test](https://github.com/yahoo/storm-perf-test/)
+
+
