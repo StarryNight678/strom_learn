@@ -129,7 +129,7 @@ Pacemaker
 Pacemaker是简单的键值存储.维护心跳信息,心跳信息不需要存储到硬盘中,在内存中存储.
 Pacemaker作为单个守护程序实例运行，使其成为潜在的单点故障。
 
-相比zoonkeeper使用的资源更少. Gigabit networking下,the real limit is likely around 2000-3000 nodes. 
-```
+相比zoonkeeper使用的资源更少. Gigabit networking下,the real limit is likely around 2000-3000 nodes.
 
-``` 
+
+ 
