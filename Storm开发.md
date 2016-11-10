@@ -11,7 +11,6 @@
 进程启动一个或多个线程。
 一个task认为是一个spout或者bolt实例。
 默认一个executor分配一个task。
-
 可以设置worker数量，executor数量和task数量。
 
 
