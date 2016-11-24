@@ -259,6 +259,13 @@ Trident在处理输入stream的时候会把输入转换成若干个tuple的batch
 
 ![](https://github.com/nathanmarz/storm/wiki/images/batched-stream.png)
 
+**trident 必须成批的发送tuple**,每个batch分配唯一标识符.
+分组方式:
+
+1. 非事务型:不同组可能含有相同tuple
+1. 事务型:batch非重复,batch包含相同tuple
+1. 非透明型:数据非重复,不能保证batch内容不变.
+
 
 
 # 4实时趋势分析

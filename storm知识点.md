@@ -63,4 +63,8 @@ Process latency – The average time it takes to Ack a Tuple after it is first r
 
 tuple收到和确认的的平均时间.
 
+1. Spout Complete Latency: the time a tuple is emitted until Spout.ack() is called.
+1. Bolt Execution Latency: the time it take to run Bolt.execute().
+1. Bolt Processing Latency: the time Bolt.execute() is called until the bolt acks the given input tuple.
 
+[延迟讲解](http://stackoverflow.com/questions/33558613/storm-huge-discrepancy-between-bolt-latency-and-total-latency)
