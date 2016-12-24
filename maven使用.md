@@ -44,17 +44,20 @@
 ```
 
 
-## 出现构建项目时间长问题
-加上参数
-```
--Dversion=1.0 -DarchetypeCatalog=internal
-```
+
 
 ## 2入门文档
 
 [mvn官方入门文档](http://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
 
 1. 创建工程
+
+## 出现构建项目时间长问题
+加上参数
+```
+-Dversion=1.0 -DarchetypeCatalog=internal
+```
+
 
 ```
 mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
