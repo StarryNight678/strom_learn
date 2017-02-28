@@ -596,6 +596,46 @@ public interface IBackingMap<T>
 1. void  multiPut(List<List<Object>> keys, List<T> vals) 
 
 
+Trident提供了一个QueryFunction接口用来实现Trident中在一个source state上查询的功能。
+
+```
+public interface QueryFunction<S extends State,T>
+extends EachOperation
+
+List<T> batchRetrieve(S state, List<TridentTuple> args) 
+void  execute(TridentTuple tuple, T result, TridentCollector collector) 
+```
+
+- BaseQueryFunction
+
+```
+public abstract class BaseQueryFunction<S extends State,T>
+extends BaseOperation
+implements QueryFunction<S,T>
+```
+
+同时还提供了一个StateUpdater来实现Trident中更新source state的功能。
+
+```java
+public abstract class BaseStateUpdater<S extends State>
+extends BaseOperation
+implements StateUpdater<S>
+```
+
+
+### Implementing Map States
+
+在Trident中实现MapState是非常简单的，它几乎帮你做了所有的事情。OpaqueMap, TransactionalMap, 和 NonTransactionalMap 类实现了所有相关的逻辑，包括容错的逻辑。你只需要将一个**IBackingMap**的实现提供给这些类就可以了。IBackingMap接口看上去如下所示：
+
+Trident还提供了一种CachedMap类来进行自动的LRU cache。
+
+
+大家可以看看 [MemcachedState](https://github.com/nathanmarz/trident-memcached/blob/master/src/jvm/trident/memcached/MemcachedState.java)
+的实现，从而学习一下怎样将这些工具组合在一起形成一个高性能的MapState实现。MemcachedState是允许大家选择使用opaque transactional, transactional, 还是 non-transactional 语义的。
+
+
+
+
 
 # 内部实现
 
