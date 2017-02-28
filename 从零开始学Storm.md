@@ -177,15 +177,13 @@ implements IBatchBolt<T>
 
 # 5Bolt详解
 
-在客户端主机创建Bolt,序列化套拓扑,提交到主控节点.集群启动worker,反序列化Bolt,prepare调用,开始处理元组.
+在客户端主机创建Bolt,序列化到拓扑,提交到主控节点.集群启动worker,反序列化Bolt,prepare调用,开始处理元组.
 
 复合锚定,通过发射元组列表来实现.
 
 
 declareOutputFields 都需要声明字段.
-```java
 
-```
 
 
 # 6Zoonkeeper详解
@@ -375,7 +373,7 @@ TridentState wordCounts = topology.newStream("spout1", spout)
 1. 每个batch有唯一ID
 1. 状态更新在Batch间顺序执行
 
-5种类型的操作
+Trident 有5种类型的操作
 
 1. 本地分区: 应用本地到每个分区
 1. 重新分区: 重新分区一个流,不改变内容
@@ -426,9 +424,9 @@ implements Function
 stateQuery 用于查询状态
 分区持久化 partitionPersist  用于更新状态源
 
-- 投影
+- 投影 **projection**
 
-投影操作值保留操作中指定的字段.
+  投影操作值保留操作中指定的字段.
 
 ### 重新分区
 
@@ -444,12 +442,13 @@ stateQuery 用于查询状态
 
 ### 聚合
 
+mystream.aggregator
 
 ### 流分组
 
+groupBy
 
 ### 合并与连接
-
 
 topology.merge(stream1,stream2,stream3,...)
 
@@ -459,13 +458,9 @@ topology.merge(stream1,stream2,stream3,...)
 
 topology.join()
 
-
-
 ## Trident状态
 
 仅处理一次,快速,持续聚合方法
-
-
 
 ## 事务
 
@@ -488,8 +483,7 @@ topology.join()
 
 不透事务,失去源节点也是容错的. 实现了一次且仅一次的语义.
 
-
-需要保存
+需要保存以前值.
 
 ```
 Value=4
@@ -521,21 +515,193 @@ tid=2
 
 没有保证
 
-
-
 ## 实现恰好一次语义
 
 1. state 事务 只能与 spout 事务类型 相结合.
 1. state 不透明事务 可以与spout 事务或不透明事务.
 
+![](https://github.com/nathanmarz/storm/wiki/images/spout-vs-state.png)
+
 
 State只有两个方法 begincommit 和 commit
 
 
+[TridentTopology](http://storm.apache.org/releases/1.0.2/javadocs/index.html)
+
+TridentTopology方法
+
+Stream  newStream(String txId, IBatchSpout spout) 
+
+[Stream](http://storm.apache.org/releases/1.0.2/javadocs/index.html)
+
+
+
+1. GroupedStream groupBy(Fields fields)
+1. Stream  filter(Filter filter)
+1. Stream  each(Fields inputFields, Filter filter)
+1. Stream  each(Fields inputFields, Function function, Fields functionFields) 
+1. Stream  parallelismHint(int hint)
+    Applies a parallelism hint to a stream.
+1. Stream  stateQuery(TridentState state, Fields inputFields, QueryFunction function, Fields functionFields) 
+1. Stream  stateQuery(TridentState state, QueryFunction function, Fields functionFields) 
+1. TridentState  persistentAggregate(StateFactory stateFactory,
+    CombinerAggregator agg, Fields functionFields) 
+
+- StateFactory
+
+```java
+public interface StateFactory
+extends Serializable
+
+State makeState(Map conf, IMetricsContext metrics, 
+  int partitionIndex, int numPartitions) 
+```
+
+```java
+public abstract class BaseStateUpdater<S extends State>
+extends BaseOperation
+implements StateUpdater<S>
+```
+
+
+persistentAggregate  是  partitionPersist上的另外一层抽象.
+通过利用Trident聚合器来更新源状态.
+
+public interface MapState<T>
+extends ReadOnlyMapState<T>
+
+void  multiPut(List<List<Object>> keys, List<T> vals) 
+List<T> multiUpdate(List<List<Object>> keys, List<ValueUpdater> updaters) 
+
+
+public class MemoryMapState<T>
+extends Object
+implements Snapshottable<T>, ITupleCollection, MapState<T>, RemovableMapState<T>
+
+1. void  beginCommit(Long txid) 
+1. void  commit(Long txid) 
+1. T get() 
+1. Iterator<List<Object>>  getTuples() 
+1. List<T> multiGet(List<List<Object>> keys) 
+1. void  multiPut(List<List<Object>> keys, List<T> vals) 
+1. void  multiRemove(List<List<Object>> keys) 
+1. List<T> multiUpdate(List<List<Object>> keys, List<ValueUpdater> updaters) 
+1. void  set(T o) 
+1. T update(ValueUpdater updater) 
+
+
+public interface IBackingMap<T>
+
+1. List<T> multiGet(List<List<Object>> keys) 
+1. void  multiPut(List<List<Object>> keys, List<T> vals) 
+
 
 
 # 内部实现
-# 相关项目
-# 企业应用案例
 
-Kafka
+查看struct内容
+
+[storm.thrift](https://github.com/StarryNight678/storm/blob/master/storm-core/src/storm.thrift)
+
+通过nimbus的Thrift接口完成Jar上传.
+
+
+
+# Kafka
+
+Kafka是由LinkedIn开发的一个分布式的消息系统，使用Scala编写
+
+
+Kafka是一种分布式的，基于发布/订阅的消息系统。主要设计目标如下：
+
+1. 以时间复杂度为O(1)的方式提供消息持久化能力，
+    即使对TB级以上数据也能保证常数时间复杂度的访问性能。
+1. 高吞吐率。即使在非常廉价的商用机器上也能做到单机支持每秒100K条以上消息的传输。
+1. 支持Kafka Server间的消息分区，及分布式消费，同时保证每个Partition内的消息顺序传输。
+1. 同时支持离线数据处理和实时数据处理。
+1. Scale out：支持在线水平扩展。
+
+##　拓扑结构:
+
+Broker
+Kafka集群包含一个或多个服务器，这种服务器被称为broker
+
+Topic
+每条发布到Kafka集群的消息都有一个类别，这个类别被称为Topic。**（物理上不同Topic的消息分开存储，逻辑上一个Topic的消息虽然保存于一个或多个broker上但用户只需指定消息的Topic即可生产或消费数据而不必关心数据存于何处）**
+
+Partition
+Parition是物理上的概念，每个Topic包含一个或多个Partition.
+
+Producer
+负责发布消息到Kafka broker
+
+Consumer
+消息消费者，向Kafka broker读取消息的客户端。
+
+Consumer Group
+每个Consumer属于一个特定的Consumer Group（可为每个Consumer指定group name，若不指定group name则属于默认的group）。
+
+
+![](http://cdn1.infoqstatic.com/statics_s1_20170221-0307u1/resource/articles/kafka-analysis-part-1/zh/resources/0310020.png)
+
+
+如上图所示，一个典型的Kafka集群中包含若干Producer（可以是web前端产生的Page View，或者是服务器日志，系统CPU、Memory等），若干broker（Kafka支持水平扩展，一般broker数量越多，集群吞吐率越高），若干Consumer Group，以及一个Zookeeper集群。Kafka通过Zookeeper管理集群配置，选举leader，以及在Consumer Group发生变化时进行rebalance。Producer使用push模式将消息发布到broker，Consumer使用pull模式从broker订阅并消费消息。
+
+Topic & Partition
+
+**每个Partition在物理上对应一个文件夹**
+不同的消息可以并行写入不同broker的不同Partition里.
+
+Topic在逻辑上可以被认为是一个queue，每条消费都必须指定它的Topic，可以简单理解为必须指明把这条消息放进哪个queue里。为了使得Kafka的吞吐率可以线性提高，物理上把Topic分成一个或多个Partition，每个Partition在物理上对应一个文件夹，该文件夹下存储这个Partition的所有消息和索引文件。若创建topic1和topic2两个topic，且分别有13个和19个分区，则整个集群上会相应会生成共32个文件夹（本文所用集群共8个节点，此处topic1和topic2 replication-factor均为1），如下图所示。
+
+
+![](http://cdn1.infoqstatic.com/statics_s1_20170221-0307u1/resource/articles/kafka-analysis-part-1/zh/resources/0310022.png)
+
+
+这个log entries并非由一个文件构成，而是分成多个segment，每个segment以该segment第一条消息的offset命名并以“.kafka”为后缀。另外会有一个索引文件，它标明了每个segment下包含的log entry的offset范围，如下图所示。
+
+**因为每条消息都被append到该Partition中，属于顺序写磁盘，因此效率非常高（经验证，顺序写磁盘效率比随机写内存还要高，这是Kafka高吞吐率的一个很重要的保证）**
+
+对于传统的message queue而言，一般会删除已经被消费的消息，而Kafka集群会保留所有的消息，无论其被消费与否。当然，因为磁盘限制，不可能永久保留所有数据（实际上也没必要），因此Kafka提供两种策略删除旧数据。一是基于时间，二是基于Partition文件大小。例如可以通过配置$KAFKA_HOME/config/server.properties，让Kafka删除一周前的数据，也可在Partition文件超过1GB时删除旧数据，配置如下所示。
+
+同一Topic的一条消息只能被同一个Consumer Group内的一个Consumer消费，但多个Consumer Group可同时消费这一消息。
+
+- 为何使用消息系统
+
+解耦
+在项目启动之初来预测将来项目会碰到什么需求，是极其困难的。消息系统在处理过程中间插入了一个隐含的、基于数据的接口层，两边的处理过程都要实现这一接口。这允许你独立的扩展或修改两边的处理过程，只要确保它们遵守同样的接口约束。
+
+冗余
+有些情况下，处理数据的过程会失败。除非数据被持久化，否则将造成丢失。消息队列把数据进行持久化直到它们已经被完全处理，通过这一方式规避了数据丢失风险。许多消息队列所采用的"插入-获取-删除"范式中，在把一个消息从队列中删除之前，需要你的处理系统明确的指出该消息已经被处理完毕，从而确保你的数据被安全的保存直到你使用完毕。
+
+扩展性
+因为消息队列解耦了你的处理过程，所以增大消息入队和处理的频率是很容易的，只要另外增加处理过程即可。不需要改变代码、不需要调节参数。扩展就像调大电力按钮一样简单。
+
+灵活性 & 峰值处理能力
+在访问量剧增的情况下，应用仍然需要继续发挥作用，但是这样的突发流量并不常见；如果为以能处理这类峰值访问为标准来投入资源随时待命无疑是巨大的浪费。使用消息队列能够使关键组件顶住突发的访问压力，而不会因为突发的超负荷的请求而完全崩溃。
+
+可恢复性
+系统的一部分组件失效时，不会影响到整个系统。消息队列降低了进程间的耦合度，所以即使一个处理消息的进程挂掉，加入队列中的消息仍然可以在系统恢复后被处理。
+
+顺序保证
+在大多使用场景下，数据处理的顺序都很重要。大部分消息队列本来就是排序的，并且能保证数据会按照特定的顺序来处理。Kafka保证一个Partition内的消息的有序性。
+
+缓冲
+在任何重要的系统中，都会有需要不同的处理时间的元素。例如，加载一张图片比应用过滤器花费更少的时间。消息队列通过一个缓冲层来帮助任务最高效率的执行———写入队列的处理会尽可能的快速。该缓冲有助于控制和优化数据流经过系统的速度。
+
+异步通信
+很多时候，用户不想也不需要立即处理消息。消息队列提供了异步处理机制，允许用户把一个消息放入队列，但并不立即处理它。想向队列中放入多少消息就放多少，然后在需要的时候再去处理它们。
+
+
+- Redis 轻量级队列
+
+Redis是一个基于Key-Value对的NoSQL数据库，开发维护很活跃。虽然它是一个Key-Value数据库存储系统，但它本身支持MQ功能，所以完全可以当做一个轻量级的队列服务来使用。对于RabbitMQ和Redis的入队和出队操作，各执行100万次，每10万次记录一次执行时间。测试数据分为128Bytes、512Bytes、1K和10K四个不同大小的数据。实验表明：入队时，当数据比较小时Redis的性能要高于RabbitMQ，而如果数据大小超过了10K，Redis则慢的无法忍受；出队时，无论数据大小，Redis都表现出非常好的性能，而RabbitMQ的出队性能则远低于Redis。
+
+- ZeroMQ
+
+ZeroMQ号称最快的消息队列系统，尤其针对大吞吐量的需求场景。ZeroMQ能够实现RabbitMQ不擅长的**高级/复杂的队列**，但是开发人员需要自己组合多种技术框架，技术上的复杂度是对这MQ能够应用成功的挑战。ZeroMQ具有**一个独特的非中间件的模式**，你不需要安装和运行一个消息服务器或中间件，因为你的应用程序将扮演这个服务器角色。你只需要简单的引用ZeroMQ程序库，可以使用NuGet安装，然后你就可以愉快的在应用程序之间发送消息了。但是ZeroMQ仅提供非持久性的队列，也就是说如果宕机，数据将会丢失。其中，Twitter的Storm 0.9.0以前的版本中默认使用ZeroMQ作为数据流的传输（Storm从0.9版本开始同时支持ZeroMQ和Netty作为传输模块）。
+
+
+- Kafka/Jafka
+
+Kafka是Apache下的一个子项目，是一个高性能跨语言分布式发布/订阅消息队列系统，而Jafka是在Kafka之上孵化而来的，即Kafka的一个升级版。具有以下特性：快速持久化，可以在O(1)的系统开销下进行消息持久化；高吞吐，在一台普通的服务器上既可以达到10W/s的吞吐速率；完全的分布式系统，Broker、Producer、Consumer都原生自动支持分布式，自动实现负载均衡；**支持Hadoop数据并行加载**，对于像Hadoop的一样的日志数据和离线分析系统，但又要求实时处理的限制，这是一个可行的解决方案。Kafka通过Hadoop的并行加载机制统一了在线和离线的消息处理。Apache Kafka相对于ActiveMQ是一个非常轻量级的消息系统，除了性能非常好之外，还是一个工作良好的分布式系统。
